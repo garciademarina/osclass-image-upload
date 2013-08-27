@@ -22,7 +22,7 @@ Replace the upload process and use javascript library fine uploader and jquery.
 Once plugin is installed, you need to add following code to item-post.php theme
 file, under the folder oc-content/themes/THEME_NAME.
 
-1. ***Find and remove all code related to image upload action, using Bender theme for example:***
+1 *** Find and remove all code related to image upload action, using Bender theme for example:***
 
 ```php
 <?php if( osc_images_enabled_at_items() ) { ?>
@@ -43,7 +43,7 @@ file, under the folder oc-content/themes/THEME_NAME.
 <?php } ?>
 ```
 
-2. ***Add as replacement this code***
+2 *** Add as replacement this code***
 
 ```php
 <?php if( osc_images_enabled_at_items() ) { ?>
