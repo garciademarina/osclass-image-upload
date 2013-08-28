@@ -24,6 +24,11 @@ file, under the folder oc-content/themes/THEME_NAME.
 
 * ***Find and remove all code related to image upload action, using Bender theme for example:***
 
+```
+<?php if(osc_images_enabled_at_items()) ItemForm::photos_javascript(); ?>
+```
+
+
 ```php
 <?php if( osc_images_enabled_at_items() ) { ?>
 <div class="box photos">
