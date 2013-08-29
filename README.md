@@ -13,6 +13,8 @@ Replace the upload process and use javascript library fine uploader and jquery.
   
   * Image preview. 
   
+  * Daily purge of old temporary images (Cron) 
+  
 ## Preview
 
 ![alt text](http://i.imgur.com/KceFIN0.png "Image upload osclass")
