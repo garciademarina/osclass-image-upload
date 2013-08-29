@@ -55,7 +55,7 @@ file, under the folder oc-content/themes/THEME_NAME.
 <div class="box photos">
     <h2><?php _e('Photos', 'bender'); ?></h2>
     <div class="control-group">
-    <?php ItemForm::photos(); ?>
+        <?php ItemForm::photos(); ?>
         <?php print_image_uploader(); ?>
     </div>
     <div style="clear:both;"></div>
