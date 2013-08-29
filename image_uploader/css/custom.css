@@ -25,11 +25,12 @@
     width: initial;
 }
 
-.qq-upload-list li.qq-upload-success {
+.qq-upload-list li {
     float: left;
-    background-color: #dff0d8;
-    color: #333333;
+    background-color: #dff0d8!important;
+    color: #333333!important;
     display: block;
+    min-height: 200px;
 }
 
 /*    width: 47%;*/
@@ -44,6 +45,7 @@
     width: 145px;
     height: 1em;
     display: block;
+    overflow: hidden;
 }
 
 .qq-uploader {

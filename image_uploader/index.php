@@ -18,18 +18,22 @@ Plugin update URI:
         ?>
         <div id="restricted-fine-uploader"></div>
 
+        <div style="clear:both;"></div>
         <?php if(count($aImages)>0) { ?>
+        <h3><?php _e('Images already uploaded', 'image_uploader');?></h3>
         <ul class="qq-upload-list">
         <?php foreach($aImages as $img){ ?>
             <li class=" qq-upload-success">
-                <span class="qq-upload-file">b1goat001.jpg</span>
+                <span class="qq-upload-file"><?php echo $img; ?></span>
                 <a class="qq-upload-delete" onclick="$(this).parent().remove();" style="display: inline; cursor:pointer;">Delete</a>
                 <div class="fu_preview_img"><img src="oc-content/uploads/temp/<?php echo osc_esc_html($img); ?>" alt="<?php echo osc_esc_html($img); ?>"></div>
                 <input type="hidden" name="fu_images[]" value="<?php echo osc_esc_html($img); ?>">
             </li>
         <?php } ?>
         </ul>
-        <?php }
+        <?php } ?>
+        <div style="clear:both;"></div>
+        <?php
     }
 
     function fu_clear_session()
@@ -177,10 +181,10 @@ Plugin update URI:
             osc_add_hook('footer','fu_header_script');
 
             // js and css
-            osc_enqueue_style('fu-fine-uploader-css', osc_base_url() . 'oc-content/plugins/fine_uploader/jquery.fineuploader/fineuploader.css');
-            osc_enqueue_style('fu-fine-uploader-custom-css', osc_base_url() . 'oc-content/plugins/fine_uploader/css/custom.css');
+            osc_enqueue_style('fu-fine-uploader-css', osc_base_url() . 'oc-content/plugins/image_uploader/jquery.fineuploader/fineuploader.css');
+            osc_enqueue_style('fu-fine-uploader-custom-css', osc_base_url() . 'oc-content/plugins/image_uploader/css/custom.css');
 
-            osc_register_script('fu-fine-uploader-js', osc_base_url() . 'oc-content/plugins/fine_uploader/jquery.fineuploader/jquery.fineuploader-3.8.0.min.js', 'jquery');
+            osc_register_script('fu-fine-uploader-js', osc_base_url() . 'oc-content/plugins/image_uploader/jquery.fineuploader/jquery.fineuploader-3.8.0.min.js', 'jquery');
             osc_enqueue_script('fu-fine-uploader-js');
 
             // clear session
