@@ -30,12 +30,22 @@
     background-color: #dff0d8;
     color: #333333;
     display: block;
-    width: 45%;
-    margin: 5px;
 }
+
+/*    width: 47%;*/
 
 .qq-upload-button {
     background-color: #f2dede;
     color: #333333;
     margin-bottom: 10px;
+}
+
+.qq-upload-file {
+    width: 145px;
+    height: 1em;
+    display: block;
+}
+
+.qq-uploader {
+    width: 100%;
 }

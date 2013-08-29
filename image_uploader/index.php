@@ -186,4 +186,50 @@ Plugin update URI:
     osc_add_hook('posted_item', 'fu_add_image_resources');
     osc_add_hook('edited_item', 'fu_add_image_resources');
 
+    function fu_install()
+    {
+        // create temp directory
+        $pathname = osc_uploads_path().'/temp';
+        @mkdir($pathname);
+    }
+
+    function fu_uninstall()
+    {
+        // remove temp directory
+        $dirname = osc_uploads_path().'/temp';
+        @rmdir($dirname);
+    }
+
+    osc_register_plugin(osc_plugin_path(__FILE__), 'fu_install' );
+    osc_add_hook(osc_plugin_path(__FILE__)."_uninstall", 'fu_uninstall' );
+
+    /**
+     * Remove files > 1h
+     */
+    function fu_cron_hourly() {
+
+        $dir = osc_uploads_path() . '/temp';
+        if ($manager = opendir($dir)) {
+            while (false !== ($entrada = readdir($manager))) {
+                if ($entrada != "." && $entrada != "..") {
+                    $filename = $dir . $entrada;
+                    $now = new DateTime();
+                    $d = new DateTime( );
+                    $d->setTimestamp(filectime($filename));
+                    $diff = $d->diff($now);
+
+                    $min = $diff->i;
+                    $min = $min + ($diff->h * 60);
+                    $min = $min + ($diff->d * 24 * 60);
+
+                    // more than 15 min remove temp image
+                    if ($min >= 60) {
+                        @unlink($filename);
+                    }
+                }
+            }
+            closedir($manager);
+        }
+    }
+    osc_add_hook('cron_hourly', 'fu_cron_hourly');
 ?>
