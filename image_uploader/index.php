@@ -20,6 +20,7 @@ Plugin update URI:
 
         <div style="clear:both;"></div>
         <?php if(count($aImages)>0) { ?>
+        <br/>
         <h3><?php _e('Images already uploaded', 'image_uploader');?></h3>
         <ul class="qq-upload-list">
         <?php foreach($aImages as $img){ ?>
@@ -46,12 +47,12 @@ Plugin update URI:
     {
         // <div id="restricted-fine-uploader"></div>
         $aExt = explode(',',osc_allowed_extension());
-        foreach($aExt as $key => $value)
+        foreach($aExt as $key => $value) {
             $aExt[$key] = "'".$value."'";
+        }
+        
         $allowedExtensions = join(',', $aExt);
-
         $maxSize = (int)osc_max_size_kb()*1024;
-
         ?>
 
         <script>
