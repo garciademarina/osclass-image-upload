@@ -1,10 +1,11 @@
 <?php
 /*
-Plugin Name: Fine Uploader
+Plugin Name: Image Uploader
 Plugin URI: http://www.osclass.org/
 Description: This plugin allow to use fine uploader at add and edit listing pages
 Version: 0.1
 Author: Osclass
+Short Name: image_uploader
 Author URI: http://www.osclass.org/
 Plugin update URI:
 */
@@ -17,8 +18,17 @@ Plugin update URI:
         ?>
         <div id="restricted-fine-uploader"></div>
 
+        <?php if(count($aImages)>0) { ?>
+        <ul class="qq-upload-list">
         <?php foreach($aImages as $img){ ?>
-        <input type="hidden" name="fu_images[]" value="<?php echo osc_esc_html($img); ?>"/>
+            <li class=" qq-upload-success">
+                <span class="qq-upload-file">b1goat001.jpg</span>
+                <a class="qq-upload-delete" onclick="$(this).parent().remove();" style="display: inline; cursor:pointer;">Delete</a>
+                <div class="fu_preview_img"><img src="oc-content/uploads/temp/<?php echo osc_esc_html($img); ?>" alt="<?php echo osc_esc_html($img); ?>"></div>
+                <input type="hidden" name="fu_images[]" value="<?php echo osc_esc_html($img); ?>">
+            </li>
+        <?php } ?>
+        </ul>
         <?php }
     }
 
@@ -66,9 +76,9 @@ Plugin update URI:
                 }
                 }).on('complete', function(event, id, fileName, responseJSON) {
                     if (responseJSON.success) {
-                        $('#restricted-fine-uploader').append('<input type="hidden" name="fu_images[]" value="'+responseJSON.uploadName+'"></input>'); //uploadName
                         var li = $('.qq-upload-list li')[id];
                         $(li).append('<div class="fu_preview_img"><img src="oc-content/uploads/temp/'+responseJSON.uploadName+'" alt="' + fileName + '"></div>');
+                        $(li).append('<input type="hidden" name="fu_images[]" value="'+responseJSON.uploadName+'"></input>'); //uploadName
                     }
                 });
         });
