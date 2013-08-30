@@ -17,6 +17,8 @@ require_once PLUGINS_PATH.'image_uploader/server/qqFileUploader.php';
         $aImages = array();
         if( Session::newInstance()->_getForm('fu_pre_images') != '' ) {
             $aImages = Session::newInstance()->_getForm('fu_pre_images');
+            Session::newInstance()->_drop('fu_pre_images');
+            Session::newInstance()->_dropKeepForm('fu_pre_images');
         }
         ?>
         <div id="restricted-fine-uploader"></div>
@@ -64,7 +66,8 @@ require_once PLUGINS_PATH.'image_uploader/server/qqFileUploader.php';
     function fu_clear_session()
     {
         // clear session
-        Session::newInstance()->_clearVariables();
+        Session::newInstance()->_drop('fu_pre_images');
+        Session::newInstance()->_dropKeepForm('fu_pre_images');
     }
 
     function fu_header_script()
@@ -201,6 +204,10 @@ require_once PLUGINS_PATH.'image_uploader/server/qqFileUploader.php';
         $page   = Rewrite::newInstance()->get_location();
         $action = Rewrite::newInstance()->get_section();
 
+        if(! ($page=="item" && ($action=="item_add_post" || $action=="item_edit_post") ) ) {
+            // clear session
+            osc_add_hook("footer", 'fu_clear_session', 9);
+        }
         if($page=="item" && ($action=="item_add" || $action=="item_edit") ) {
             osc_add_hook('footer','fu_header_script');
 
@@ -210,9 +217,6 @@ require_once PLUGINS_PATH.'image_uploader/server/qqFileUploader.php';
 
             osc_register_script('fu-fine-uploader-js', osc_base_url() . 'oc-content/plugins/image_uploader/jquery.fineuploader/jquery.fineuploader-3.8.0.min.js', 'jquery');
             osc_enqueue_script('fu-fine-uploader-js');
-
-            // clear session
-            osc_add_hook("footer", 'fu_clear_session', 9);
         }
     }
 
