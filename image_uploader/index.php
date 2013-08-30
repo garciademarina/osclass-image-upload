@@ -46,13 +46,13 @@ require_once PLUGINS_PATH.'image_uploader/server/qqFileUploader.php';
 
         // <div id="restricted-fine-uploader"></div>
         $allowedExtensions =  explode(',',osc_allowed_extension());
-        
+
         $sizeLimit = (int)osc_max_size_kb()*1024;
 
         $uploader = new qqFileUploader($allowedExtensions, $sizeLimit);
 
         // Call handleUpload() with the name of the folder, relative to PHP's getcwd()
-        $result = $uploader->handleUpload(osc_uploads_path().'/temp/');
+        $result = $uploader->handleUpload(osc_content_path().'/uploads/temp/');
         $result['uploadName'] = $uploader->getUploadName();
 
         // to pass data through iframe you will need to encode all html tags
@@ -127,7 +127,7 @@ require_once PLUGINS_PATH.'image_uploader/server/qqFileUploader.php';
         $aImages = Params::getParam('fu_images');
         foreach($aImages as $img) {
 
-            $tmpName = osc_uploads_path().'/temp/'.$img;
+            $tmpName = osc_content_path().'/uploads/temp/'.$img;
 
             $total_size = 0;
 
@@ -157,15 +157,15 @@ require_once PLUGINS_PATH.'image_uploader/server/qqFileUploader.php';
             ));
             $resourceId = $itemResourceManager->dao->insertedId();
 
-            osc_copy($tmpName.'_normal', osc_uploads_path() . $resourceId . '.jpg');
-            osc_copy($tmpName.'_preview', osc_uploads_path() . $resourceId . '_preview.jpg');
-            osc_copy($tmpName.'_thumbnail', osc_uploads_path() . $resourceId . '_thumbnail.jpg');
+            osc_copy($tmpName.'_normal', osc_content_path() .'/uploads/' . $resourceId . '.jpg');
+            osc_copy($tmpName.'_preview', osc_content_path() .'/uploads/' . $resourceId . '_preview.jpg');
+            osc_copy($tmpName.'_thumbnail', osc_content_path() .'/uploads/' . $resourceId . '_thumbnail.jpg');
             if( osc_keep_original_image() ) {
-                $path = osc_uploads_path() . $resourceId.'_original.jpg';
+                $path = osc_content_path() .'/uploads/' . $resourceId.'_original.jpg';
                 move_uploaded_file($tmpName, $path);
             }
 
-            $s_path = str_replace(osc_base_path(), '', osc_uploads_path());
+            $s_path = str_replace(osc_base_path(), '', osc_content_path() .'/uploads/');
             $resourceType = 'image/jpeg';
             $itemResourceManager->update(
                 array(
@@ -227,14 +227,14 @@ require_once PLUGINS_PATH.'image_uploader/server/qqFileUploader.php';
     function fu_install()
     {
         // create temp directory
-        $pathname = osc_uploads_path().'/temp';
+        $pathname = osc_content_path() .'/uploads/temp';
         @mkdir($pathname);
     }
 
     function fu_uninstall()
     {
         // remove temp directory
-        $dirname = osc_uploads_path().'/temp';
+        $dirname = osc_content_path() .'/uploads/temp';
         @rmdir($dirname);
     }
 
@@ -246,7 +246,7 @@ require_once PLUGINS_PATH.'image_uploader/server/qqFileUploader.php';
      */
     function fu_cron_hourly() {
 
-        $dir = osc_uploads_path() . '/temp';
+        $dir = osc_content_path() .'/uploads/temp';
         if ($manager = opendir($dir)) {
             while (false !== ($entrada = readdir($manager))) {
                 if ($entrada != "." && $entrada != "..") {
