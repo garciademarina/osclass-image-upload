@@ -9,6 +9,9 @@ Short Name: image_uploader
 Author URI: http://www.osclass.org/
 Plugin update URI:
 */
+
+require_once PLUGINS_PATH.'image_uploader/server/qqFileUploader.php';
+
     function print_image_uploader()
     {
         $aImages = array();
@@ -37,6 +40,27 @@ Plugin update URI:
         <?php
     }
 
+    function ajax_fu_upload()
+    {
+        // Include the uploader class
+
+        // <div id="restricted-fine-uploader"></div>
+        $allowedExtensions =  explode(',',osc_allowed_extension());
+        
+        $sizeLimit = (int)osc_max_size_kb()*1024;
+
+        $uploader = new qqFileUploader($allowedExtensions, $sizeLimit);
+
+        // Call handleUpload() with the name of the folder, relative to PHP's getcwd()
+        $result = $uploader->handleUpload(osc_uploads_path().'/temp/');
+        $result['uploadName'] = $uploader->getUploadName();
+
+        // to pass data through iframe you will need to encode all html tags
+        echo htmlspecialchars(json_encode($result), ENT_NOQUOTES);
+
+    }
+    osc_add_hook('ajax_fu_upload', 'ajax_fu_upload');
+
     function fu_clear_session()
     {
         // clear session
@@ -50,7 +74,7 @@ Plugin update URI:
         foreach($aExt as $key => $value) {
             $aExt[$key] = "'".$value."'";
         }
-        
+
         $allowedExtensions = join(',', $aExt);
         $maxSize = (int)osc_max_size_kb()*1024;
         ?>
@@ -59,7 +83,7 @@ Plugin update URI:
         $(document).ready(function() {
             $('#restricted-fine-uploader').fineUploader({
                 request: {
-                    endpoint: '<?php echo osc_ajax_plugin_url(osc_plugin_folder(__FILE__).'server/upload.php'); ?>'
+                    endpoint: '<?php echo osc_ajax_hook_url('fu_upload'); ?>'
                 },
                 multiple: true,
                 validation: {
@@ -178,7 +202,6 @@ Plugin update URI:
         $action = Rewrite::newInstance()->get_section();
 
         if($page=="item" && ($action=="item_add" || $action=="item_edit") ) {
-
             osc_add_hook('footer','fu_header_script');
 
             // js and css
