@@ -51,3 +51,50 @@
 .qq-uploader {
     width: 100%;
 }
+#restricted-fine-uploader .alert-error{
+    width: 100%;
+    position: relative;
+    display: inline-block;
+    padding: 1em;
+    background-color: bisque;
+}
+
+li.qq-upload-success
+{
+    position: relative;
+}
+
+li.qq-upload-success div.primary_image,
+li.qq-upload-success div.primary_image a{
+    height: 0px;
+    width: 0px;
+    background-position: 30px 0;
+    top: 0;
+    position: absolute;
+    background-image: url(../images/split.png);
+    right: 0px;
+}
+li.qq-upload-success div.primary_image.over {
+    background-position: 30px 0;
+    height: 30px;
+    width: 30px;
+}
+
+li.qq-upload-success div.primary_image.primary {
+    height: 30px;
+    width: 30px;
+    background-position: 0px 0!important;
+}
+
+.primary_image{
+    cursor: pointer;
+}
+li.qq-upload-success div.primary_image a{
+    width: 30px;
+    height: 30px;
+    display: block;
+    background-image:none;
+}
+input[name="qqfile"] {
+    height: 100%;
+}

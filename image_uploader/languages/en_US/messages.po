@@ -1,0 +1,59 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Image Uploader Osclass v.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2013-11-03 20:53+0100\n"
+"PO-Revision-Date: \n"
+"Last-Translator: carlos <garciademarina@gmail.com>\n"
+"Language-Team: garciademarina <garciademarina@gmail.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Language: English\n"
+"X-Poedit-SourceCharset: utf-8\n"
+"X-Poedit-KeywordsList: _e;__\n"
+"X-Poedit-Basepath: .\n"
+"X-Poedit-Country: UNITED STATES\n"
+"X-Poedit-SearchPath-0: /Users/garciademarina/projects/fine_uploader/image_uploader\n"
+
+#: /Users/garciademarina/projects/fine_uploader/image_uploader/index.php:29
+msgid "Images already uploaded"
+msgstr ""
+
+#: /Users/garciademarina/projects/fine_uploader/image_uploader/index.php:189
+msgid "Too many items ({netItems}) would be uploaded. Item limit is {itemLimit}."
+msgstr ""
+
+#: /Users/garciademarina/projects/fine_uploader/image_uploader/index.php:190
+msgid "The files are being uploaded, if you leave now the upload will be cancelled."
+msgstr ""
+
+#: /Users/garciademarina/projects/fine_uploader/image_uploader/index.php:191
+msgid "{file} has an invalid extension. Valid extension(s): {extensions}."
+msgstr ""
+
+#: /Users/garciademarina/projects/fine_uploader/image_uploader/index.php:192
+msgid "{file} is too large, maximum file size is {sizeLimit}."
+msgstr ""
+
+#: /Users/garciademarina/projects/fine_uploader/image_uploader/index.php:193
+msgid "{file} is empty, please select files again without it."
+msgstr ""
+
+#: /Users/garciademarina/projects/fine_uploader/image_uploader/index.php:206
+msgid "Click or Drop for upload images"
+msgstr ""
+
+#: /Users/garciademarina/projects/fine_uploader/image_uploader/index.php:222
+msgid "Make primary image"
+msgstr ""
+
+#: /Users/garciademarina/projects/fine_uploader/image_uploader/index.php:260
+msgid "Too many items"
+msgstr ""
+
+#: /Users/garciademarina/projects/fine_uploader/image_uploader/index.php:260
+#, php-format
+msgid "would be uploaded. Item limit is %d."
+msgstr ""
+

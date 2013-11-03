@@ -3,7 +3,7 @@
 Plugin Name: Image Uploader
 Plugin URI: http://www.osclass.org/
 Description: This plugin allow to use fine uploader at add and edit listing pages
-Version: 0.1
+Version: 0.9
 Author: Osclass
 Short Name: image_uploader
 Author URI: http://www.osclass.org/
@@ -42,6 +42,29 @@ require_once PLUGINS_PATH.'image_uploader/server/qqFileUploader.php';
         <?php
     }
 
+    function ajax_fu_validate()
+    {
+        $id = Params::getParam('id');
+        if(!is_numeric($id)) { echo json_encode(array('success' => false)); die();}
+
+        $secret = Params::getParam('secret');
+        $item = Item::newInstance()->findByPrimaryKey($id);
+        if($item['s_secret']!=$secret) { echo json_encode(array('success' => false)); die();}
+
+        $result = array('success' => true);
+        $nResources = ItemResource::newInstance()->countResources($id);
+
+        if($nResources>=osc_max_images_per_item()) {
+            $result = array('success' => false, 'count' => $nResources);
+        } else {
+            $result = array('success' => true, 'count' => $nResources);
+        }
+        // to pass data through iframe you will need to encode all html tags
+        echo json_encode($result);
+
+    }
+    osc_add_hook('ajax_fu_validate', 'ajax_fu_validate');
+
     function ajax_fu_upload()
     {
         // Include the uploader class
@@ -79,40 +102,169 @@ require_once PLUGINS_PATH.'image_uploader/server/qqFileUploader.php';
         }
 
         $allowedExtensions = join(',', $aExt);
-        $maxSize = (int)osc_max_size_kb()*1024;
+        $maxSize    = (int) osc_max_size_kb()*1024;
+        $maxImages  = (int) osc_max_images_per_item();
         ?>
 
         <script>
         $(document).ready(function() {
+
+            $('#restricted-fine-uploader').on('click','.primary_image', function(event){
+                if(parseInt($("div.primary_image").index(this))>0){
+
+                    var a_src   = $(this).parent().find('.fu_preview_img img').attr('src');
+                    var a_title = $(this).parent().find('.fu_preview_img img').attr('alt');
+                    var a_input = $(this).parent().find('input').attr('value');
+                    // info
+                    var a1 = $(this).parent().find('span.qq-upload-file').text();
+                    var a2 = $(this).parent().find('span.qq-upload-size').text();
+
+                    var li_first =  $('ul.qq-upload-list li').get(0);
+
+                    var b_src   = $(li_first).find('.fu_preview_img img').attr('src');
+                    var b_title = $(li_first).find('.fu_preview_img img').attr('alt');
+                    var b_input = $(li_first).find('input').attr('value');
+                    var b1      = $(li_first).find('span.qq-upload-file').text();
+                    var b2      = $(li_first).find('span.qq-upload-size').text();
+
+                    $(li_first).find('.fu_preview_img img').attr('src', a_src);
+                    $(li_first).find('.fu_preview_img img').attr('alt', a_title);
+                    $(li_first).find('input').attr('value', a_input);
+                    $(li_first).find('span.qq-upload-file').text(a1);
+                    $(li_first).find('span.qq-upload-size').text(a2);
+
+                    $(this).parent().find('.fu_preview_img img').attr('src', b_src);
+                    $(this).parent().find('.fu_preview_img img').attr('alt', b_title);
+                    $(this).parent().find('input').attr('value', b_input);
+                    $(this).parent().find('span.qq-upload-file').text(b1);
+                    $(this).parent().find('span.qq-upload-file').text(b2);
+                }
+            });
+
+            $('#restricted-fine-uploader').on('click','.primary_image', function(event){
+                $(this).addClass('over primary');
+            });
+
+            $('#restricted-fine-uploader').on('mouseenter mouseleave','.primary_image', function(event){
+                if(event.type=='mouseenter') {
+                    if(!$(this).hasClass('primary')) {
+                        $(this).addClass('primary');
+                    }
+                } else {
+                    if(parseInt($("div.primary_image").index(this))>0){
+                        $(this).removeClass('primary');
+                    }
+                }
+            });
+
+
+            $('#restricted-fine-uploader').on('mouseenter mouseleave','li.qq-upload-success', function(event){
+                if(parseInt($("li.qq-upload-success").index(this))>0){
+
+                    if(event.type=='mouseenter') {
+                        $(this).find('div.primary_image').addClass('over');
+                    } else {
+                        $(this).find('div.primary_image').removeClass('over');
+                    }
+                }
+            });
+
+            window.removed_images = 0;
+            $('#restricted-fine-uploader').on('click', 'a.qq-upload-delete', function(event) {
+                window.removed_images = window.removed_images+1;
+                $('#restricted-fine-uploader .alert-error').remove();
+            });
+
             $('#restricted-fine-uploader').fineUploader({
                 request: {
                     endpoint: '<?php echo osc_ajax_hook_url('fu_upload'); ?>'
                 },
                 multiple: true,
                 validation: {
-                    allowedExtensions: [<?php echo $allowedExtensions; ?>], //['jpeg', 'jpg', 'gif', 'png'],
-                    sizeLimit: <?php echo $maxSize; ?> // 50 kB = 50 * 1024 bytes
+                    allowedExtensions: [<?php echo $allowedExtensions; ?>],
+                    sizeLimit: <?php echo $maxSize; ?>,
+                    itemLimit: <?php echo $maxImages; ?>
                 },
-                // optional feature
+                messages: {
+                    tooManyItemsError: '<?php echo osc_esc_js(__('Too many items ({netItems}) would be uploaded. Item limit is {itemLimit}.', 'image_uploader'));?>',
+                    onLeave: '<?php echo osc_esc_js(__('The files are being uploaded, if you leave now the upload will be cancelled.', 'image_uploader'));?>',
+                    typeError: '<?php echo osc_esc_js(__('{file} has an invalid extension. Valid extension(s): {extensions}.', 'image_uploader'));?>',
+                    sizeError: '<?php echo osc_esc_js(__('{file} is too large, maximum file size is {sizeLimit}.', 'image_uploader'));?>',
+                    emptyError: '<?php echo osc_esc_js(__('{file} is empty, please select files again without it.', 'image_uploader'));?>'
+                },
                 deleteFile: {
                     enabled: true,
                     method: "POST",
+                    forceConfirm: false,
                     endpoint: '<?php echo osc_ajax_plugin_url(osc_plugin_folder(__FILE__).'server/success.php'); ?>'
                 },
+                retry: {
+                    showAutoRetryNote : true,
+                    showButton: true
+                },
                 text: {
-                    uploadButton: 'Click or Drop for upload images'
+                    uploadButton: '<?php _e('Click or Drop for upload images','image_uploader'); ?>'
                 },
                 showMessage: function(message) {
                     // Using Bootstrap's classes
                     $('#restricted-fine-uploader').append('<div class="alert alert-error">' + message + '</div>');
-                }
+                    }
+                }).on('statusChange', function(event, id, old_status, new_status) {
+                    $(".alert.alert-error").remove();
                 }).on('complete', function(event, id, fileName, responseJSON) {
                     if (responseJSON.success) {
-                        var li = $('.qq-upload-list li')[id];
-                        $(li).append('<div class="fu_preview_img"><img src="oc-content/uploads/temp/'+responseJSON.uploadName+'" alt="' + fileName + '"></div>');
-                        $(li).append('<input type="hidden" name="fu_images[]" value="'+responseJSON.uploadName+'"></input>'); //uploadName
+                        var new_id = id - removed_images;
+                        var li = $('.qq-upload-list li')[new_id];
+                        <?php if(Params::getParam('action')=='item_add') { ?>
+                        if(parseInt(new_id)==0) {
+                            $(li).append('<div class="primary_image primary"></div>');
+                        } else {
+                            $(li).append('<div class="primary_image"><a title="<?php echo osc_esc_html(__('Make primary image', 'image_uploader')); ?>"></a></div>');
+                        }
+                        <?php } ?>
+                        $(li).append('<div class="fu_preview_img"><img src="<?php echo osc_base_url(); ?>oc-content/uploads/temp/'+fileName+'" alt="' + responseJSON.uploadName + '"></div>');
+                        $(li).append('<input type="hidden" name="fu_images[]" value="'+responseJSON.uploadName+'"></input>');
                     }
+                <?php if(Params::getParam('action')=='item_edit') { ?>
+                }).on('validateBatch', function(event, fileOrBlobDataArray) {
+                    // clear alert messages
+                    if($('#restricted-fine-uploader .alert-error').size()>0) {
+                        $('#restricted-fine-uploader .alert-error').remove();
+                    }
+
+                    var len = fileOrBlobDataArray.length;
+                    var result = canContinue(len);
+                    return result.success;
+
                 });
+
+                function canContinue(numUpload) {
+                    // strUrl is whatever URL you need to call
+                    var strUrl      = "<?php echo osc_ajax_hook_url('fu_validate'); ?>&id=<?php echo osc_item_id(); ?>&secret=<?php echo osc_item_secret(); ?>";
+                    var strReturn   = {};
+
+                    jQuery.ajax({
+                        url: strUrl,
+                        success: function(html) {
+                        strReturn = html;
+                        },
+                        async:false
+                    });
+                    var json  = JSON.parse(strReturn);
+                    var total = parseInt(json.count) + $("#restricted-fine-uploader input[name='fu_images[]']").size() + (numUpload);
+                    if(total<=<?php echo $maxImages;?>) {
+                        json.success = true;
+                    } else {
+                        json.success = false;
+
+                        $('#restricted-fine-uploader .qq-uploader').after($('<div class="alert alert-error"><?php _e('Too many items');?> ('+total+') <?php echo sprintf(__('would be uploaded. Item limit is %d.', 'image_uploader'), $maxImages); ?></div>'));
+                    }
+                    return json;
+                }
+
+                <?php } else { ?>
+                });
+                <?php } ?>
         });
         </script>
         <?php
@@ -123,66 +275,71 @@ require_once PLUGINS_PATH.'image_uploader/server/qqFileUploader.php';
 
     function fu_add_image_resources($item)
     {
-
+        $wat = new Watermark();
         $itemId = $item['pk_i_id'];
 
         $itemResourceManager = ItemResource::newInstance();
         $aImages = Params::getParam('fu_images');
-        foreach($aImages as $img) {
+        if (is_array($aImages)) {
+            foreach($aImages as $img) {
 
-            $tmpName = osc_content_path().'/uploads/temp/'.$img;
+                $itemResourceManager->insert(array(
+                    'fk_i_item_id' => $itemId
+                ));
+                $resourceId = $itemResourceManager->dao->insertedId();
 
-            $total_size = 0;
 
-            // Create normal size
-            $normal_path = $path = $tmpName."_normal";
-            $size = explode('x', osc_normal_dimensions());
-            ImageResizer::fromFile($tmpName)->resizeTo($size[0], $size[1])->saveToFile($path);
+                $tmpName = osc_content_path().'/uploads/temp/'.$img;
+                $total_size = 0;
 
-            if( osc_is_watermark_text() ) {
-                $wat->doWatermarkText( $path , osc_watermark_text_color(), osc_watermark_text() , 'image/jpeg' );
-            } elseif ( osc_is_watermark_image() ){
-                $wat->doWatermarkImage( $path, 'image/jpeg');
+
+                // Create normal size
+                $normal_path = $path = $tmpName."_normal";
+                $size = explode('x', osc_normal_dimensions());
+                ImageResizer::fromFile($tmpName)->resizeTo($size[0], $size[1])->saveToFile($path);
+
+                if( osc_is_watermark_text() ) {
+                    $wat->doWatermarkText( $path , osc_watermark_text_color(), osc_watermark_text() , 'image/jpeg' );
+                } elseif ( osc_is_watermark_image() ){
+                    $wat->doWatermarkImage( $path, 'image/jpeg');
+                }
+
+                // Create preview
+                $path = $tmpName."_preview";
+                $size = explode('x', osc_preview_dimensions());
+                ImageResizer::fromFile($normal_path)->resizeTo($size[0], $size[1])->saveToFile($path);
+
+                // Create thumbnail
+                $path = $tmpName."_thumbnail";
+                $size = explode('x', osc_thumbnail_dimensions());
+                ImageResizer::fromFile($normal_path)->resizeTo($size[0], $size[1])->saveToFile($path);
+
+
+
+                osc_copy($tmpName.'_normal', osc_content_path() .'/uploads/' . $resourceId . '.jpg');
+                osc_copy($tmpName.'_preview', osc_content_path() .'/uploads/' . $resourceId . '_preview.jpg');
+                osc_copy($tmpName.'_thumbnail', osc_content_path() .'/uploads/' . $resourceId . '_thumbnail.jpg');
+                if( osc_keep_original_image() ) {
+                    $path = osc_content_path() .'/uploads/' . $resourceId.'_original.jpg';
+                    move_uploaded_file($tmpName, $path);
+                }
+
+                $s_path = 'oc-content/uploads/';
+                $resourceType = 'image/jpeg';
+                $itemResourceManager->update(
+                    array(
+                        's_path'          => $s_path
+                        ,'s_name'         => osc_genRandomPassword()
+                        ,'s_extension'    => 'jpg'
+                        ,'s_content_type' => $resourceType
+                    )
+                    ,array(
+                        'pk_i_id'       => $resourceId
+                        ,'fk_i_item_id' => $itemId
+                    )
+                );
+                osc_run_hook('uploaded_file', ItemResource::newInstance()->findByPrimaryKey($resourceId));
             }
-
-            // Create preview
-            $path = $tmpName."_preview";
-            $size = explode('x', osc_preview_dimensions());
-            ImageResizer::fromFile($normal_path)->resizeTo($size[0], $size[1])->saveToFile($path);
-
-            // Create thumbnail
-            $path = $tmpName."_thumbnail";
-            $size = explode('x', osc_thumbnail_dimensions());
-            ImageResizer::fromFile($normal_path)->resizeTo($size[0], $size[1])->saveToFile($path);
-
-            $itemResourceManager->insert(array(
-                'fk_i_item_id' => $itemId
-            ));
-            $resourceId = $itemResourceManager->dao->insertedId();
-
-            osc_copy($tmpName.'_normal', osc_content_path() .'/uploads/' . $resourceId . '.jpg');
-            osc_copy($tmpName.'_preview', osc_content_path() .'/uploads/' . $resourceId . '_preview.jpg');
-            osc_copy($tmpName.'_thumbnail', osc_content_path() .'/uploads/' . $resourceId . '_thumbnail.jpg');
-            if( osc_keep_original_image() ) {
-                $path = osc_content_path() .'/uploads/' . $resourceId.'_original.jpg';
-                move_uploaded_file($tmpName, $path);
-            }
-
-            $s_path = str_replace(osc_base_path(), '', osc_content_path() .'/uploads/');
-            $resourceType = 'image/jpeg';
-            $itemResourceManager->update(
-                array(
-                    's_path'          => $s_path
-                    ,'s_name'         => osc_genRandomPassword()
-                    ,'s_extension'    => 'jpg'
-                    ,'s_content_type' => $resourceType
-                )
-                ,array(
-                    'pk_i_id'       => $resourceId
-                    ,'fk_i_item_id' => $itemId
-                )
-            );
-            osc_run_hook('uploaded_file', ItemResource::newInstance()->findByPrimaryKey($resourceId));
         }
     }
 
@@ -254,7 +411,7 @@ require_once PLUGINS_PATH.'image_uploader/server/qqFileUploader.php';
         if ($manager = opendir($dir)) {
             while (false !== ($entrada = readdir($manager))) {
                 if ($entrada != "." && $entrada != "..") {
-                    $filename = $dir . $entrada;
+                    $filename = $dir .'/'. $entrada;
                     $now = new DateTime();
                     $d = new DateTime( );
                     $d->setTimestamp(filectime($filename));
@@ -264,7 +421,7 @@ require_once PLUGINS_PATH.'image_uploader/server/qqFileUploader.php';
                     $min = $min + ($diff->h * 60);
                     $min = $min + ($diff->d * 24 * 60);
 
-                    // more than 15 min remove temp image
+                    // more than 60 min remove temp image
                     if ($min >= 60) {
                         @unlink($filename);
                     }
@@ -274,4 +431,5 @@ require_once PLUGINS_PATH.'image_uploader/server/qqFileUploader.php';
         }
     }
     osc_add_hook('cron_hourly', 'fu_cron_hourly');
+    osc_add_hook('init', 'fu_cron_hourly');
 ?>
